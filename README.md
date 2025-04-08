@@ -51,4 +51,3 @@ update to true by finding id
 func (tsql TaskSQL) GetTask() ([]Task, error) 
 ```
 Get items from tasks table
-```go
