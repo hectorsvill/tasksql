@@ -26,3 +26,6 @@ go.work.sum
 
 #db files
 *.db
+
+#folder
+data/*

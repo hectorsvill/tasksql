@@ -7,6 +7,9 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"database/sql"
+	// "os/exec"
+
 )
 
 func getInput(str string) string {
@@ -85,10 +88,10 @@ type config struct {
 	tasks []Task
 }
 
-func setCfg() config {
+func setCfg(db *sql.DB) config {
 	cfg := config{
 		tsql: TaskSQL {
-			dbFile: "task.db",
+			db: db,
 		},
 	}
 
@@ -103,5 +106,12 @@ func setCfg() config {
 
 
 func main() {
-	runTask(setCfg())
+	file := "data.db"
+	db, err := sql.Open("sqlite3", file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	
+	runTask(setCfg(db))
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	// "os/exec"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -16,7 +18,7 @@ const (
 )
 
 type TaskSQL struct{
-	dbFile string
+	db *sql.DB
 }
 
 type Task struct {
@@ -26,12 +28,7 @@ type Task struct {
 }
 
 func (tsql TaskSQL) CreateTable() error {
-	db, err := sql.Open("sqlite3", tsql.dbFile)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	_, err = db.Exec(CreateTable)
+	_, err := tsql.db.Exec(CreateTable)
 	if err != nil {
 		return err
 	}
@@ -39,12 +36,8 @@ func (tsql TaskSQL) CreateTable() error {
 }
 
 func (tsql TaskSQL) PostTask(task string) error {
-	db, err := sql.Open("sqlite3", tsql.dbFile)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	_, err = db.Exec(InsertTask, task)
+
+	_, err := tsql.db.Exec(InsertTask, task)
 	if err != nil {
 		return err
 	}
@@ -52,12 +45,8 @@ func (tsql TaskSQL) PostTask(task string) error {
 }
 
 func (tsql TaskSQL) DeleteTask() error {
-	db, err := sql.Open("sqlite3", tsql.dbFile)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	_, err = db.Exec(DeleteWhereCompleted, true)
+
+	_, err := tsql.db.Exec(DeleteWhereCompleted, true)
 	if err != nil {
 		return err
 	}
@@ -65,12 +54,7 @@ func (tsql TaskSQL) DeleteTask() error {
 }
 
 func (tsql TaskSQL) UpdateTaskToCompleted(id int) error {
-	db, err := sql.Open("sqlite3", tsql.dbFile)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	_, err = db.Exec(UpdateTaskCompletedWereID, true, id)
+	_, err := tsql.db.Exec(UpdateTaskCompletedWereID, true, id)
 	if err != nil {
 		return err
 	}
@@ -80,12 +64,7 @@ func (tsql TaskSQL) UpdateTaskToCompleted(id int) error {
 
 func (tsql TaskSQL) GetTask() ([]Task, error) {
 	tasks := []Task{}
-	db, err := sql.Open("sqlite3", tsql.dbFile)
-	if err != nil {
-		return nil,err
-	}
-	defer db.Close()
-	rows, err := db.Query(SelectAllTasks)
+	rows, err := tsql.db.Query(SelectAllTasks)
 	if err != nil {
 		return nil, err
 	}
