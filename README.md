@@ -16,7 +16,7 @@ Sql queries constants
 
 ```go
 type TaskSQL struct{
-	dbFile string
+	db *sql.DB
 }
 
 type Task struct {
