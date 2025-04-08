@@ -38,7 +38,7 @@ func (tsql TaskSQL) CreateTable() error {
 	return nil
 }
 
-func (tsql TaskSQL) PutTask(task string) error {
+func (tsql TaskSQL) PostTask(task string) error {
 	db, err := sql.Open("sqlite3", tsql.dbFile)
 	if err != nil {
 		return err
@@ -50,8 +50,6 @@ func (tsql TaskSQL) PutTask(task string) error {
 	}
 	return nil
 }
-
-
 
 func (tsql TaskSQL) DeleteTask() error {
 	db, err := sql.Open("sqlite3", tsql.dbFile)

@@ -27,7 +27,7 @@ func runTask(cfg config) {
 		sv := getInput("")
 		if sv == "s" {
 			input := getInput("set")
-			err := cfg.tsql.PutTask(input)
+			err := cfg.tsql.PostTask(input)
 			if err != nil {
 				log.Println(err)
 			}
