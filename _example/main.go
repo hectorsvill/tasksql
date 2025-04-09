@@ -120,5 +120,5 @@ func setCfg() config {
 func main() {
 	cfg := setCfg()
 	runTask(cfg)
-	// defer cfg.tsql.taskSql.CloseTaskSQl()
+	defer cfg.tsql.CloseTaskSQl()
 }

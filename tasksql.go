@@ -2,7 +2,7 @@ package tasksql
 
 import (
 	"database/sql"
-	
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -33,8 +33,6 @@ func (tsql TaskSQL) CloseTaskSQl() error {
 	}
 	return nil
 }
-
-
 
 func (tsql TaskSQL) CreateTableIfNotExist() error {
 	_, err := tsql.DB.Exec(createTableIfNotExist)
