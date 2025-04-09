@@ -2,8 +2,7 @@ package tasksql
 
 import (
 	"database/sql"
-
-	"github.com/hectorsvill/tasksql"
+	
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -35,11 +34,7 @@ func (tsql TaskSQL) CloseTaskSQl() error {
 	return nil
 }
 
-type Task struct {
-	Id        int
-	Text      string
-	Completed bool
-}
+
 
 func (tsql TaskSQL) CreateTableIfNotExist() error {
 	_, err := tsql.DB.Exec(createTableIfNotExist)
@@ -71,6 +66,12 @@ func (tsql TaskSQL) UpdateTaskToCompleted(id int) error {
 		return err
 	}
 	return nil
+}
+
+type Task struct {
+	Id        int
+	Text      string
+	Completed bool
 }
 
 func (tsql TaskSQL) GetTask() ([]Task, error) {
