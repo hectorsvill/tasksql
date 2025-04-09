@@ -44,9 +44,9 @@ func runTask(cfg config) {
 				}
 				cfg.tasks = tasks
 			}
-			cfg.tsql.printTask(cfg.tasks)
+			printTask(cfg.tasks)
 		} else if sv == "u" {
-			cfg.tsql.printTask(cfg.tasks)
+			printTask(cfg.tasks)
 			id := getInput("Enter id of task to update")
 			idInt, err := strconv.Atoi(id)
 			if err != nil || (idInt < 1 && idInt > len(cfg.tasks)) {
@@ -80,6 +80,13 @@ func getTasks(cfg config) {
 		log.Fatal(err)
 	} else {
 		cfg.tasks = tasks
+	}
+}
+
+
+func printTask(tasks []Task) {
+	for i, t := range tasks {
+		fmt.Printf("\n%v ] %v {%v}\n", i, t.text, t.completed)
 	}
 }
 

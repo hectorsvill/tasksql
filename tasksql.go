@@ -2,8 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	// "os/exec"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -36,7 +34,6 @@ func (tsql TaskSQL) CreateTable() error {
 }
 
 func (tsql TaskSQL) PostTask(task string) error {
-
 	_, err := tsql.db.Exec(InsertTask, task)
 	if err != nil {
 		return err
@@ -45,7 +42,6 @@ func (tsql TaskSQL) PostTask(task string) error {
 }
 
 func (tsql TaskSQL) DeleteTask() error {
-
 	_, err := tsql.db.Exec(DeleteWhereCompleted, true)
 	if err != nil {
 		return err
@@ -60,7 +56,6 @@ func (tsql TaskSQL) UpdateTaskToCompleted(id int) error {
 	}
 	return nil
 }
-
 
 func (tsql TaskSQL) GetTask() ([]Task, error) {
 	tasks := []Task{}
@@ -80,8 +75,3 @@ func (tsql TaskSQL) GetTask() ([]Task, error) {
 	return tasks, nil
 }
 
-func (tsql TaskSQL) printTask(tasks []Task) {
-	for i, t := range tasks {
-		fmt.Printf("\n%v ] %v {%v}\n", i, t.text, t.completed)
-	}
-}
