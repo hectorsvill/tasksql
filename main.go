@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"database/sql"
-	// "os/exec"
-
 )
 
 func getInput(str string) string {
@@ -61,7 +59,7 @@ func runTask(cfg config) {
 			cfg.tasks[idInt].completed = true
 			fmt.Print("\n______________\nTask updated\n______________\n")
 		} else if sv == "d" {
-			err := cfg.tsql.DeleteTask()
+			err := cfg.tsql.DeleteWhereTaskCompleted()
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -102,7 +100,7 @@ func setCfg(db *sql.DB) config {
 		},
 	}
 
-	if err := cfg.tsql.CreateTable(); err != nil {
+	if err := cfg.tsql.CreateTableIfNotExist(); err != nil {
 		log.Fatal(err)
 	}
 	
