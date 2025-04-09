@@ -13,31 +13,18 @@ add import
  
 ### Use case 
 ```go
-func setCfg() config {
-	taskSql, err := tasksql.NewDB("data.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cfg := config{tsql: taskSql}
-
-	if err := cfg.tsql.CreateTableIfNotExist(); err != nil {
-		log.Fatal(err)
-	}
-
-	getTasks(cfg)
-	return cfg
+taskSql, err := tasksql.NewDB("data.db")
+if err != nil {
+	log.Fatal(err)
 }
-
-
-func main() {
-	cfg := setCfg()
-	runTask(cfg)
-	defer cfg.tsql.CloseTaskSQl()
-}
-
+defer tsql.CloseTaskSQl()
+tsql.CreateTable()
+tsql.GetTask()
+.
+.
+.
 ```
-
+Create a tasksql object to pass arround and access methods 
 
 ```go
 const (
