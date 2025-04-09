@@ -1,4 +1,4 @@
-module tasksql
+module github.com/hectorsvill/tasksql
 
 go 1.23.2
 
