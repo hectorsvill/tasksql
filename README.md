@@ -1,5 +1,43 @@
 # tasksql 🫠 
 
+### Setup
+```bash
+go get github.com/hectorsvill/tasksql
+```
+import module
+
+```go
+import "github.com/hectorsvill/tasksql"
+```
+add import
+ 
+### Use case 
+```go
+func setCfg() config {
+	taskSql, err := tasksql.NewDB("data.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cfg := config{tsql: taskSql}
+
+	if err := cfg.tsql.CreateTableIfNotExist(); err != nil {
+		log.Fatal(err)
+	}
+
+	getTasks(cfg)
+	return cfg
+}
+
+
+func main() {
+	cfg := setCfg()
+	runTask(cfg)
+	defer cfg.tsql.CloseTaskSQl()
+}
+
+```
+
 
 ```go
 const (
