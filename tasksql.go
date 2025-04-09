@@ -16,17 +16,17 @@ const (
 )
 
 type TaskSQL struct{
-	db *sql.DB
+	DB *sql.DB
 }
 
 type Task struct {
-	id        int
-	text      string
-	completed bool
+	Id        int
+	Text      string
+	Completed bool
 }
 
 func (tsql TaskSQL) CreateTableIfNotExist() error {
-	_, err := tsql.db.Exec(createTableIfNotExist)
+	_, err := tsql.DB.Exec(createTableIfNotExist)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (tsql TaskSQL) CreateTableIfNotExist() error {
 }
 
 func (tsql TaskSQL) PostTask(task string) error {
-	_, err := tsql.db.Exec(insertTasksValueText, task)
+	_, err := tsql.DB.Exec(insertTasksValueText, task)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (tsql TaskSQL) PostTask(task string) error {
 }
 
 func (tsql TaskSQL) DeleteWhereTaskCompleted() error {
-	_, err := tsql.db.Exec(deleteWhereTaskCompleted, true)
+	_, err := tsql.DB.Exec(deleteWhereTaskCompleted, true)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (tsql TaskSQL) DeleteWhereTaskCompleted() error {
 }
 
 func (tsql TaskSQL) UpdateTaskToCompleted(id int) error {
-	_, err := tsql.db.Exec(updateTaskCompletedWereID, true, id)
+	_, err := tsql.DB.Exec(updateTaskCompletedWereID, true, id)
 	if err != nil {
 		return err
 	}
@@ -59,14 +59,14 @@ func (tsql TaskSQL) UpdateTaskToCompleted(id int) error {
 
 func (tsql TaskSQL) GetTask() ([]Task, error) {
 	tasks := []Task{}
-	rows, err := tsql.db.Query(selectAllTasks)
+	rows, err := tsql.DB.Query(selectAllTasks)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var t Task
-		err = rows.Scan(&t.id, &t.text, &t.completed)
+		err = rows.Scan(&t.Id, &t.Text, &t.Completed)
 		if err != nil {
 			return nil, err
 		}
