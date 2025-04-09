@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"log"
+	"os"
 	"strconv"
 	"strings"
-	"database/sql"
+
 	"github.com/hectorsvill/tasksql"
 )
 
@@ -96,34 +96,29 @@ func printTask(tasks []tasksql.Task) {
 }
 
 type config struct {
-	tsql tasksql.TaskSQL
+	tsql *tasksql.TaskSQL
 	tasks []tasksql.Task
 }
 
-func setCfg(db *sql.DB) config {
-	cfg := config{
-		tsql: tasksql.TaskSQL {
-			DB: db,
-		},
+func setCfg() config {
+	taskSql, err := tasksql.NewDB("data.db")
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	cfg := config{tsql: taskSql}
 
 	if err := cfg.tsql.CreateTableIfNotExist(); err != nil {
 		log.Fatal(err)
 	}
-	
+
 	getTasks(cfg)
-	
 	return cfg
 }
 
 
 func main() {
-	file := "data.db"
-	db, err := sql.Open("sqlite3", file)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	
-	runTask(setCfg(db))
+	cfg := setCfg()
+	runTask(cfg)
+	defer cfg.tsql.CloseTaskSQl()
 }

@@ -3,6 +3,7 @@ package tasksql
 import (
 	"database/sql"
 
+	"github.com/hectorsvill/tasksql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,6 +18,21 @@ const (
 
 type TaskSQL struct{
 	DB *sql.DB
+}
+
+func NewDB(dbSourceName string) (*TaskSQL, error) {
+	db, err := sql.Open("sqlite3", dbSourceName)
+	if err != nil {
+		return  nil, err
+	}
+	return &TaskSQL{DB: db}, nil
+}
+
+func (tsql TaskSQL) CloseTaskSQl() error {
+	if tsql.DB != nil {
+		return tsql.DB.Close()
+	}
+	return nil
 }
 
 type Task struct {
