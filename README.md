@@ -13,16 +13,15 @@ add import
  
 ### Use case 
 ```go
+
 taskSql, err := tasksql.NewDB("data.db")
 if err != nil {
 	log.Fatal(err)
 }
-defer tsql.CloseTaskSQl()
-tsql.CreateTable()
-tsql.GetTask()
-.
-.
-.
+defer taskSql.CloseTaskSQl()
+
+taskSql.CreateTableIfNotExist()
+taskSql.PostTask("hello")
 ```
 Create a tasksql object to pass arround and access methods 
 
