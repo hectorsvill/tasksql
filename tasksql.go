@@ -12,9 +12,9 @@ const (
 	tableName = "tasks"
 	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
 	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
-	updateDeletedTrueWereID = "UPDATE {table} SET completed = ? WHERE id = ?;"
+	updateDeletedTrueWereID = "UPDATE {table} SET deleted = ? WHERE id = ?;"
 	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
-	selectAllText = "SELECT id,text,completed FROM {table};"
+	selectAllText = "SELECT text FROM {table};"
 )
 
 type TaskSQL struct{
@@ -73,22 +73,23 @@ func (tsql TaskSQL) UpdateTaskToDelete(table string, id int) error {
 	return nil
 }
 
-func (tsql TaskSQL) GetTask(table string) (string, error) {
-	tasks := []string{}
-	rows, err := tsql.DB.Query(selectAllText)
+func (tsql TaskSQL) GetTask(table string) ([]string, error) {
+	data := []string{}
+	selectAllTextWithTable := replaceTableName(selectAllText, table)
+	rows, err := tsql.DB.Query(selectAllTextWithTable)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var t Task
-		err = rows.Scan(&t.Id, &t.Text, &t.Completed)
+		var text string
+		err = rows.Scan(&text)
 		if err != nil {
 			return nil, err
 		}
-		tasks = append(tasks, t)
+		data = append(data, text)
 	}
-	return tasks, nil
+	return data, nil
 }
 
 func replaceTableName(query ,tableName string) string {
