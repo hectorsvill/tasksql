@@ -67,16 +67,16 @@ func (tsql TaskSQL) PostTask(table, text string) error
 Post to db with text
 
 ```go
-func (tsql TaskSQL) DeleteTask() error 
+func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error
 ```
 Delete table from db
 
 ```go
-func (tsql TaskSQL) UpdateTaskToCompleted(id int) error 
+func (tsql TaskSQL) UpdateTaskToDelete(table string, id int) error 
 ```
 update to true by finding id
 
 ```go
-func (tsql TaskSQL) GetTask() ([]Task, error) 
+func (tsql TaskSQL) GetTask(table string) ([]string, error)
 ```
-Get items from tasks table
+Get text from table
