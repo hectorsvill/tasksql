@@ -72,7 +72,7 @@ func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error
 Delete table from db
 
 ```go
-func (tsql TaskSQL) UpdateTaskToDelete(table string, id int) error 
+func (tsql TaskSQL) UpdateToDelete(table string, id int) error 
 ```
 update to true by finding id
 

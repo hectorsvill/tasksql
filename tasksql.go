@@ -64,7 +64,7 @@ func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error {
 	return nil
 }
 
-func (tsql TaskSQL) UpdateTaskToDelete(table string, id int) error {
+func (tsql TaskSQL) UpdateToDelete(table string, id int) error {
 	
 	_, err := tsql.DB.Exec(updateDeletedTrueWereID, true, id)
 	if err != nil {
