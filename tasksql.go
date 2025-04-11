@@ -46,16 +46,18 @@ func (tsql TaskSQL) CreateTableIfNotExist(table string) error {
 	return nil
 }
 
-func (tsql TaskSQL) PostTask(task string) error {
-	_, err := tsql.DB.Exec(insertTasksValueText, task)
+func (tsql TaskSQL) PostTask(table, task string) error {
+	insert := replaceTableName(insertTasksValueText, table)
+	_, err := tsql.DB.Exec(insert, task)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tsql TaskSQL) DeleteWhereTaskCompleted() error {
-	_, err := tsql.DB.Exec(deleteWhereTaskCompleted, true)
+func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error {
+	delete := replaceTableName(deleteWhereTaskCompleted, table)
+	_, err := tsql.DB.Exec(delete, true)
 	if err != nil {
 		return err
 	}

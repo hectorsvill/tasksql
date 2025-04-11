@@ -1,7 +1,6 @@
 package tasksql_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/hectorsvill/tasksql"
@@ -15,17 +14,17 @@ func Test_CreateTableIfNotExist(t *testing.T) {
 	}
 	defer tasksql.CloseTaskSQl()
 
-	table_name := "data"
-	err = tasksql.CreateTableIfNotExist(table_name)
+	tableName := "data"
+	err = tasksql.CreateTableIfNotExist(tableName)
 	if err != nil {
 		t.Fatalf("[Test_CreateTableIfNotExist] %s", "err")	
 	}
 	
-	err = tasksql.PostTask("hello")
+	err = tasksql.PostTask(tableName,"hello")
 	if err != nil {
 		t.Fatal(err)
 	}
 	
+
+	
 }
-
-
