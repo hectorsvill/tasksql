@@ -28,11 +28,11 @@ Create a tasksql object to pass arround and access methods
 ```go
 const (
 	tableName = "tasks"
-	CreateTable = "CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, completed BOOLEAN DEFAULT FALSE);"
-	DeleteWhereCompleted = "DELETE FROM tasks WHERE completed = ?;"
-	UpdateTaskCompletedWereID = "UPDATE tasks SET completed = ? WHERE id = ?;"
-	InsertTask = "INSERT INTO tasks (text) VALUES (?);"
-	SelectAllTasks = "SELECT * FROM Tasks;"
+	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
+	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
+	updateDeletedTrueWereID = "UPDATE {table} SET deleted = ? WHERE id = ?;"
+	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
+	selectAllText = "SELECT text FROM {table} ORDER BY id LIMIT 10;"
 )
 
 ```
@@ -43,23 +43,28 @@ type TaskSQL struct{
 	db *sql.DB
 }
 
-type Task struct {
-	id        int
-	text      string
-	completed bool
-}
 ```
-structure for TaskSQL and Task
-
-```go 
-func (tsql TaskSQL) CreateTable() error
-```
-Create table with CreateTable query
+TaskSQL object to pass around
 
 ```go
-func (tsql TaskSQL) PutTask(task string) error {
+func NewDB(dbSourceName string) (*TaskSQL, error)
 ```
-Put a task in sql db
+Create TaskSQL object
+
+```go
+func (tsql TaskSQL) CloseTaskSQl() error
+```
+Close TaskSQL object
+
+```go 
+func (tsql TaskSQL) CreateTableIfNotExist(table string) error 
+```
+Create table with createTableIfNotExist query
+
+```go
+func (tsql TaskSQL) PostTask(table, text string) error
+```
+Post to db with text
 
 ```go
 func (tsql TaskSQL) DeleteTask() error 

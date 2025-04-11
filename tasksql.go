@@ -46,9 +46,9 @@ func (tsql TaskSQL) CreateTableIfNotExist(table string) error {
 	return nil
 }
 
-func (tsql TaskSQL) PostTask(table, task string) error {
+func (tsql TaskSQL) PostTask(table, text string) error {
 	insert := replaceTableName(insertTasksValueText, table)
-	_, err := tsql.DB.Exec(insert, task)
+	_, err := tsql.DB.Exec(insert, text)
 	if err != nil {
 		return err
 	}
