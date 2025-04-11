@@ -14,7 +14,7 @@ const (
 	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
 	updateDeletedTrueWereID = "UPDATE {table} SET completed = ? WHERE id = ?;"
 	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
-	selectAllTasks = "SELECT id,text,completed FROM {table};"
+	selectAllText = "SELECT id,text,completed FROM {table};"
 )
 
 type TaskSQL struct{
@@ -73,15 +73,9 @@ func (tsql TaskSQL) UpdateTaskToDelete(table string, id int) error {
 	return nil
 }
 
-type Task struct {
-	Id        int
-	Text      string
-	Completed bool
-}
-
-func (tsql TaskSQL) GetTask() ([]Task, error) {
-	tasks := []Task{}
-	rows, err := tsql.DB.Query(selectAllTasks)
+func (tsql TaskSQL) GetTask(table string) (string, error) {
+	tasks := []string{}
+	rows, err := tsql.DB.Query(selectAllText)
 	if err != nil {
 		return nil, err
 	}
