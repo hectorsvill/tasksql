@@ -10,11 +10,11 @@ import (
 
 const (
 	tableName = "tasks"
-	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
-	deleteWhereTaskCompleted = "DELETE FROM tasks WHERE completed = ?;"
-	updateTaskCompletedWereID = "UPDATE tasks SET completed = ? WHERE id = ?;"
-	insertTasksValueText = "INSERT INTO tasks (text) VALUES (?);"
-	selectAllTasks = "SELECT id,text,completed FROM tasks;"
+	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
+	deleteWhereTaskCompleted = "DELETE FROM {table} WHERE completed = ?;"
+	updateTaskCompletedWereID = "UPDATE {table} SET completed = ? WHERE id = ?;"
+	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
+	selectAllTasks = "SELECT id,text,completed FROM {table};"
 )
 
 type TaskSQL struct{
@@ -37,7 +37,7 @@ func (tsql TaskSQL) CloseTaskSQl() error {
 }
 
 func (tsql TaskSQL) CreateTableIfNotExist(table string) error {
-	createTableIfNotExistWithTable := strings.Replace(createTableIfNotExist, "{table}", table, -1)
+	createTableIfNotExistWithTable := replaceTableName(createTableIfNotExist, table)
 	log.Println(createTableIfNotExistWithTable)
 	_, err := tsql.DB.Exec(createTableIfNotExistWithTable)
 	if err != nil {
@@ -92,4 +92,9 @@ func (tsql TaskSQL) GetTask() ([]Task, error) {
 		tasks = append(tasks, t)
 	}
 	return tasks, nil
+}
+
+func replaceTableName(query ,tableName string) string {
+	return 	strings.Replace(query, "{table}", tableName, -1)
+
 }

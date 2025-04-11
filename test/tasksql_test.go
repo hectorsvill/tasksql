@@ -11,7 +11,7 @@ import (
 func Test_CreateTableIfNotExist(t *testing.T) {
 	tasksql, err := tasksql.NewDB("test.db")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	defer tasksql.CloseTaskSQl()
 
@@ -19,6 +19,11 @@ func Test_CreateTableIfNotExist(t *testing.T) {
 	err = tasksql.CreateTableIfNotExist(table_name)
 	if err != nil {
 		t.Fatalf("[Test_CreateTableIfNotExist] %s", "err")	
+	}
+	
+	err = tasksql.PostTask("hello")
+	if err != nil {
+		t.Fatal(err)
 	}
 	
 }
