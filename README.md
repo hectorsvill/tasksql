@@ -32,7 +32,7 @@ const (
 	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
 	updateDeletedTrueWereID = "UPDATE {table} SET deleted = ? WHERE id = ?;"
 	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
-	selectAllText = "SELECT text FROM {table} ORDER BY id LIMIT 10;"
+	selectAllText = "SELECT text FROM {table} ORDER BY id"
 )
 
 ```
