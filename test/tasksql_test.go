@@ -1,10 +1,12 @@
 package tasksql_test
 
 import (
+	"fmt"
+	"log"
+	"math/rand"
 	"testing"
 
 	"github.com/hectorsvill/tasksql"
-
 )
 
 func Test_CreateTableIfNotExist(t *testing.T) {
@@ -20,11 +22,19 @@ func Test_CreateTableIfNotExist(t *testing.T) {
 		t.Fatalf("[Test_CreateTableIfNotExist] %s", "err")	
 	}
 	
-	err = tasksql.PostTask(tableName,"hello")
-	if err != nil {
-		t.Fatal(err)
+	for range 3 {
+		err = tasksql.PostTask(tableName,fmt.Sprintf("text%v", rand.Intn(10000)))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	
+	data, errGetTask := tasksql.GetTask(tableName)
+	if errGetTask != nil {
+		t.Fatal(err)
+	}
 
-	
+	for _,text := range data {
+		log.Println(text)
+	}
 }
