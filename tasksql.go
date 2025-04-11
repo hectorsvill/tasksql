@@ -12,7 +12,7 @@ const (
 	tableName = "tasks"
 	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
 	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
-	updateTaskCompletedWereID = "UPDATE {table} SET completed = ? WHERE id = ?;"
+	updateDeletedTrueWereID = "UPDATE {table} SET completed = ? WHERE id = ?;"
 	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
 	selectAllTasks = "SELECT id,text,completed FROM {table};"
 )
@@ -66,7 +66,7 @@ func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error {
 
 func (tsql TaskSQL) UpdateTaskToDelete(table string, id int) error {
 	
-	_, err := tsql.DB.Exec(updateTaskCompletedWereID, true, id)
+	_, err := tsql.DB.Exec(updateDeletedTrueWereID, true, id)
 	if err != nil {
 		return err
 	}
