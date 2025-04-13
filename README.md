@@ -11,17 +11,32 @@ import "github.com/hectorsvill/tasksql"
 ```
 add import
  
-### Use case 
+### Example 
+Store prompt data from Google genai: [_example](https://github.com/hectorsvill/tasksql/tree/main/_example)
 ```go
+func main() {
 
-taskSql, err := tasksql.NewDB("data.db")
-if err != nil {
-	log.Fatal(err)
+	taskSql, err := tasksql.NewDB("data.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer taskSql.CloseTaskSQl()
+
+	taskSql.CreateTableIfNotExist("question")
+	taskSql.CreateTableIfNotExist("answer")
+
+	question := "Write an article about the golang net/http package."
+
+	taskSql.PostTask("question", question)
+	gem1 := Gemini{
+		Model: Gemini_2_0_turbo,
+	}
+	log.Println(gem1.Model)
+	answer := gem1.QueryText(question)
+	taskSql.PostTask("answer", answer[0])
+	log.Println(answer)
+
 }
-defer taskSql.CloseTaskSQl()
-
-taskSql.CreateTableIfNotExist()
-taskSql.PostTask("hello")
 ```
 Create a tasksql object to pass arround and access methods 
 
