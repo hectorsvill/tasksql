@@ -11,7 +11,7 @@ import "github.com/hectorsvill/tasksql"
 ```
 add import
  
-### Example 
+### Example use of module 
 Store prompt data from Google genai: [_example](https://github.com/hectorsvill/tasksql/tree/main/_example)
 ```go
 func main() {
