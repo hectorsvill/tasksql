@@ -1,124 +1,102 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"context"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
+	"github.com/google/generative-ai-go/genai"
 	"github.com/hectorsvill/tasksql"
+	"google.golang.org/api/option"
 )
 
-func getInput(str string) string {
-	fmt.Print("\n" + str + ">: ")
-	reader := bufio.NewReader(os.Stdin)
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println("error")
-		return ""
-	}
-	input = strings.TrimSuffix(input, "\n")
-	return input
+const (
+	Gemini_1_5_turbo = "gemini-1.5-flash"
+	Gemini_2_0_turbo = "gemini-2.0-flash"
+)
+
+type Gemini struct {
+	Model string
+	// sql model
+	// id               int
+	// arch             string
+	// parameters       string
+	// context_length   int
+	// embedding_length int
 }
 
-func runTask(cfg config) {
-	
-	for {
-		fmt.Print("\n_______\n\nSet Task (s)\nView Tasks (v)\nUpdate Task To Completed(u)\nDelete all Completed Task(d)\nexit (x)\n-------")
-		sv := getInput("")
-		if sv == "s" {
-			input := getInput("set")
-			err := cfg.tsql.PostTask(input)
-			if err != nil {
-				log.Println(err)
-			}
-			fmt.Print("\n______________\nTask added\n______________\n")
-			cfg.tasks = append(cfg.tasks, tasksql.Task{
-				Id: len(cfg.tasks),
-				Text: input,
-				Completed: false,
-				},
-			)
-		} else if sv == "v" {
-			if cfg.tasks == nil {
-				tasks, err := cfg.tsql.GetTask()
-				if err != nil {
-					log.Println(err)
-				}
-				cfg.tasks = tasks
-			}
-			printTask(cfg.tasks)
-		} else if sv == "u" {
-			printTask(cfg.tasks)
-			id := getInput("Enter id of task to update")
-			idInt, err := strconv.Atoi(id)
-			if err != nil || (idInt < 1 && idInt > len(cfg.tasks)) {
-				fmt.Println("Invalid id")
-				continue
-			}
-			err = cfg.tsql.UpdateTaskToCompleted(cfg.tasks[idInt].Id)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			cfg.tasks[idInt].Completed = true
-			fmt.Print("\n______________\nTask updated\n______________\n")
-		} else if sv == "d" {
-			err := cfg.tsql.DeleteWhereTaskCompleted()
-			if err != nil {
-				fmt.Println(err)
-			}
-			fmt.Print("\n______________\nTask deleted\n______________\n")
-			cfg.tasks = nil
-			getTasks(cfg)
+func (g Gemini) QueryText(question string) []string {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
-		} else {
-			fmt.Println("Goodbye")
-			return
+	model := client.GenerativeModel(g.Model)
+	resp, err := model.GenerateContent(ctx, genai.Text(question))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logUsageMetadata(resp)
+	return getResponse(resp)
+}
+
+func logUsageMetadata(resp *genai.GenerateContentResponse) {
+	log.Printf("UsageMetadata.CachedContentTokenCount:%v UsageMetadata.CandidatesTokenCount:%v UsageMetadata.PromptTokenCount%v UsageMetadata.TotalTokenCount: %v",
+		resp.UsageMetadata.CachedContentTokenCount,
+		resp.UsageMetadata.CandidatesTokenCount,
+		resp.UsageMetadata.PromptTokenCount,
+		resp.UsageMetadata.TotalTokenCount,
+	)
+}
+
+func getResponse(resp *genai.GenerateContentResponse) (answer []string) {
+	for _, cand := range resp.Candidates {
+		if cand.Content != nil {
+			for _, part := range cand.Content.Parts {
+				if text, ok := part.(genai.Text); ok {
+					answer = append(answer, string(text))
+				}
+			}
 		}
 	}
+	return answer
 }
-func getTasks(cfg config) {
-	if tasks, err := cfg.tsql.GetTask(); err != nil {
-		log.Fatal(err)
-	} else {
-		cfg.tasks = tasks
+
+func GetListModels(client *genai.Client, ctx context.Context) (models []string) {
+	iter := client.ListModels(ctx)
+	for {
+		m, err := iter.Next()
+		if err != nil {
+			break
+		}
+		models = append(models, m.Name[7:])
 	}
+	return
 }
 
+func main() {
 
-func printTask(tasks []tasksql.Task) {
-	for i, t := range tasks {
-		fmt.Printf("\n%v ] %v {%v}\n", i, t.Text, t.Completed)
-	}
-}
-
-type config struct {
-	tsql *tasksql.TaskSQL
-	tasks []tasksql.Task
-}
-
-func setCfg() config {
 	taskSql, err := tasksql.NewDB("data.db")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer taskSql.CloseTaskSQl()
 
-	cfg := config{tsql: taskSql}
+	taskSql.CreateTableIfNotExist("question")
+	taskSql.CreateTableIfNotExist("answer")
 
-	if err := cfg.tsql.CreateTableIfNotExist(); err != nil {
-		log.Fatal(err)
+	question := "Write an article about the golang net/http package."
+
+	taskSql.PostTask("question", question)
+	gem1 := Gemini{
+		Model: Gemini_2_0_turbo,
 	}
+	log.Println(gem1.Model)
+	answer := gem1.QueryText(question)
+	taskSql.PostTask("answer", answer[0])
+	log.Println(answer)
 
-	getTasks(cfg)
-	return cfg
-}
-
-
-func main() {
-	cfg := setCfg()
-	runTask(cfg)
-	defer cfg.tsql.CloseTaskSQl()
 }
