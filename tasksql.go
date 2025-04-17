@@ -9,34 +9,34 @@ import (
 )
 
 const (
-	tableName = "tasks"
-	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
-	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
+	tableName               = "tasks"
+	createTableIfNotExist   = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
+	deleteWhereDeletedTrue  = "DELETE FROM {table} WHERE completed = ?;"
 	updateDeletedTrueWereID = "UPDATE {table} SET deleted = ? WHERE id = ?;"
-	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
-	selectAllText = "SELECT text FROM {table} ORDER BY id;"
+	insertTasksValueText    = "INSERT INTO {table} (text) VALUES (?);"
+	selectAllText           = "SELECT text FROM {table} ORDER BY id;"
 )
 
-type TaskSQL struct{
+type TaskSQL struct {
 	DB *sql.DB
 }
 
 func NewDB(dbSourceName string) (*TaskSQL, error) {
 	db, err := sql.Open("sqlite3", dbSourceName)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 	return &TaskSQL{DB: db}, nil
 }
 
-func (tsql TaskSQL) CloseTaskSQl() error {
+func (tsql *TaskSQL) CloseTaskSQl() error {
 	if tsql.DB != nil {
 		return tsql.DB.Close()
 	}
 	return nil
 }
 
-func (tsql TaskSQL) CreateTableIfNotExist(table string) error {
+func (tsql *TaskSQL) CreateTableIfNotExist(table string) error {
 	createTableIfNotExistWithTable := replaceTableName(createTableIfNotExist, table)
 	log.Println(createTableIfNotExistWithTable)
 	_, err := tsql.DB.Exec(createTableIfNotExistWithTable)
@@ -46,7 +46,7 @@ func (tsql TaskSQL) CreateTableIfNotExist(table string) error {
 	return nil
 }
 
-func (tsql TaskSQL) PostTask(table, text string) error {
+func (tsql *TaskSQL) Post(table, text string) error {
 	insert := replaceTableName(insertTasksValueText, table)
 	_, err := tsql.DB.Exec(insert, text)
 	if err != nil {
@@ -55,7 +55,7 @@ func (tsql TaskSQL) PostTask(table, text string) error {
 	return nil
 }
 
-func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error {
+func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
 	delete := replaceTableName(deleteWhereDeletedTrue, table)
 	_, err := tsql.DB.Exec(delete, true)
 	if err != nil {
@@ -64,8 +64,8 @@ func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error {
 	return nil
 }
 
-func (tsql TaskSQL) UpdateToDelete(table string, id int) error {
-	
+func (tsql *TaskSQL) UpdateToDelete(table string, id int) error {
+
 	_, err := tsql.DB.Exec(updateDeletedTrueWereID, true, id)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (tsql TaskSQL) UpdateToDelete(table string, id int) error {
 	return nil
 }
 
-func (tsql TaskSQL) GetTask(table string) ([]string, error) {
+func (tsql *TaskSQL) GetTask(table string) ([]string, error) {
 	data := []string{}
 	selectAllTextWithTable := replaceTableName(selectAllText, table)
 	rows, err := tsql.DB.Query(selectAllTextWithTable)
@@ -92,7 +92,7 @@ func (tsql TaskSQL) GetTask(table string) ([]string, error) {
 	return data, nil
 }
 
-func replaceTableName(query ,tableName string) string {
-	return 	strings.Replace(query, "{table}", tableName, -1)
+func replaceTableName(query, tableName string) string {
+	return strings.Replace(query, "{table}", tableName, -1)
 
 }
