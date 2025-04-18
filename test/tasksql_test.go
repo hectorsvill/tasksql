@@ -10,15 +10,25 @@ import (
 	"github.com/hectorsvill/tasksql"
 )
 
-var testDB *tasksql.TaskSQL
+type config struct {
+	testDB     *tasksql.TaskSQL
+	tableNames []string
+}
+
+var cfg config
 
 func TestMain(m *testing.M) {
 	var err error
-	testDB, err = tasksql.NewDB("test.db")
+	testDB, err := tasksql.NewDB("test.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer testDB.CloseTaskSQl()
+
+	cfg = config{
+		testDB:     testDB,
+		tableNames: []string{"users", "data"},
+	}
 
 	code := m.Run()
 	log.Println("[TEST START]tasksql")
@@ -29,21 +39,24 @@ func TestMain(m *testing.M) {
 
 func Test_CreateTestData(t *testing.T) {
 	tableName := "data"
-	err := testDB.CreateTableIfNotExist(tableName)
+	err := cfg.testDB.CreateTableIfNotExist(tableName)
 	if err != nil {
 		t.Fatalf("[Test_CreateTableIfNotExist] %s", err)
 	}
 
 	for range 4 {
 		text := fmt.Sprintf("text%v", uuid.NewString())
-		err = testDB.Post(tableName, text)
+		err = cfg.testDB.Post(tableName, text)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	data, errGetTask := testDB.Get(tableName)
-	if errGetTask != nil {
+}
+
+func Test_Get(t *testing.T) {
+	data, err := cfg.testDB.Get("")
+	if err != nil {
 		t.Fatal(err)
 	}
 
