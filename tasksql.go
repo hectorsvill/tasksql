@@ -3,7 +3,6 @@ package tasksql
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -42,7 +41,7 @@ func (tsql *TaskSQL) CreateTableIfNotExist(table string) error {
 	if err != nil {
 		return err
 	}
-	log.Println(createTableIfNotExistWithTable)
+	// log.Println(createTableIfNotExistWithTable)
 	_, err = tsql.DB.Exec(createTableIfNotExistWithTable)
 	if err != nil {
 		return err
@@ -62,21 +61,29 @@ func (tsql *TaskSQL) Post(table, text string) error {
 	return nil
 }
 
-func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
-	delete, err := replaceTableName(deleteWhereDeletedTrue, table)
+func (tsql *TaskSQL) UpdateToDelete(table string, id int) error {
+	query, err := replaceTableName(updateDeletedTrueWereID, table)
 	if err != nil {
 		return err
 	}
-	_, err = tsql.DB.Exec(delete, true)
+	_, err = tsql.DB.Exec(query, true, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tsql *TaskSQL) UpdateToDelete(table string, id int) error {
+func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
+	query, err := replaceTableName(deleteWhereDeletedTrue, table)
+	if err != nil {
+		return err
+	}
 
-	_, err := tsql.DB.Exec(updateDeletedTrueWereID, true, id)
+	delete, err := replaceTableName(query, table)
+	if err != nil {
+		return err
+	}
+	_, err = tsql.DB.Exec(delete, true)
 	if err != nil {
 		return err
 	}
@@ -107,7 +114,7 @@ func (tsql *TaskSQL) Get(table string) ([]string, error) {
 
 func replaceTableName(query, tableName string) (string, error) {
 	if !IsValidTableID(tableName) {
-		return "", errors.New("invalid table name")
+		return "", errors.New("[replaceTableName]: invalid table name")
 	}
 	return strings.Replace(query, "{table}", tableName, -1), nil
 }
