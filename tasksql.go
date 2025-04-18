@@ -12,7 +12,7 @@ import (
 const (
 	tableName               = "tasks"
 	createTableIfNotExist   = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
-	deleteWhereDeletedTrue  = "DELETE FROM {table} WHERE completed = ?;"
+	deleteWhereDeletedTrue  = "DELETE FROM {table} WHERE deleted = ?;"
 	updateDeletedTrueWereID = "UPDATE {table} SET deleted = ? WHERE id = ?;"
 	insertTasksValueText    = "INSERT INTO {table} (text) VALUES (?);"
 	selectAllText           = "SELECT text FROM {table} ORDER BY id;"
@@ -112,6 +112,7 @@ func replaceTableName(query, tableName string) (string, error) {
 	return strings.Replace(query, "{table}", tableName, -1), nil
 }
 
+// TODO: move to tools folder
 func IsValidTableID(tableName string) bool {
 	for _, r := range tableName {
 		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '_') {
