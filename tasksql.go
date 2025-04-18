@@ -78,12 +78,7 @@ func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
 	if err != nil {
 		return err
 	}
-
-	delete, err := replaceTableName(query, table)
-	if err != nil {
-		return err
-	}
-	_, err = tsql.DB.Exec(delete, true)
+	_, err = tsql.DB.Exec(query, true)
 	if err != nil {
 		return err
 	}
