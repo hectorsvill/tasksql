@@ -3,34 +3,46 @@ package tasksql_test
 import (
 	"fmt"
 	"log"
-	"math/rand"
+	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hectorsvill/tasksql"
 )
 
-func Test_Complete(t *testing.T) {
-	tasksql, err := tasksql.NewDB("test.db")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tasksql.CloseTaskSQl()
+var testDB *tasksql.TaskSQL
 
-	tableName := "data"
-	err = tasksql.CreateTableIfNotExist(tableName)
+func TestMain(m *testing.M) {
+	var err error
+	testDB, err = tasksql.NewDB("test.db")
 	if err != nil {
-		t.Fatalf("[Test_CreateTableIfNotExist] %s", "err")
+		log.Fatal(err)
+	}
+	defer testDB.CloseTaskSQl()
+
+	code := m.Run()
+	log.Println("[TEST START]tasksql")
+
+	os.Exit(code)
+	log.Println("[TEST FINISHED]tasksql")
+}
+
+func Test_CreateTestData(t *testing.T) {
+	tableName := "data"
+	err := testDB.CreateTableIfNotExist(tableName)
+	if err != nil {
+		t.Fatalf("[Test_CreateTableIfNotExist] %s", err)
 	}
 
 	for range 4 {
-		text := fmt.Sprintf("text%v", rand.Intn(1000))
-		err = tasksql.Post(tableName, text)
+		text := fmt.Sprintf("text%v", uuid.NewString())
+		err = testDB.Post(tableName, text)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	data, errGetTask := tasksql.Get(tableName)
+	data, errGetTask := testDB.Get(tableName)
 	if errGetTask != nil {
 		t.Fatal(err)
 	}
@@ -40,15 +52,22 @@ func Test_Complete(t *testing.T) {
 	}
 }
 
+func Test_DeleteWhereDeletedTrue(t *testing.T) {
+
+}
+
 func Test_IsValidTableID(t *testing.T) {
-	type actualExpected struct {
+	type TestCase struct {
 		input    string
 		expected bool
 	}
 
-	testCases := []actualExpected{
+	testCases := []TestCase{
 		{input: "data", expected: true},
-		{input: "213sdqSelec-te", expected: false},
+		{input: "users", expected: true},
+		{input: "213s_dqSelect-a1", expected: false},
+		{input: "SELECT * FROM data;", expected: false},
+		{input: "SELECT text FROM data WHERE id = 4;", expected: false},
 	}
 
 	for _, tc := range testCases {
