@@ -13,6 +13,7 @@ import (
 type config struct {
 	testDB     *tasksql.TaskSQL
 	tableNames []string
+	count      int
 }
 
 var cfg config
@@ -29,12 +30,13 @@ func TestMain(m *testing.M) {
 	cfg = config{
 		testDB:     testDB,
 		tableNames: []string{"users", "data", "notes"},
+		count:      12,
 	}
 
 	code := m.Run()
 	// log.Println("[TEST START]tasksql")
 
-	os.Remove(dbName)
+	// os.Remove(dbName)
 	os.Exit(code)
 	// log.Println("[TEST FINISHED]tasksql")
 }
@@ -46,7 +48,7 @@ func Test_CreateTestData(t *testing.T) {
 			t.Fatalf("[Test_CreateTestData]: %s", err)
 		}
 
-		for range 12 {
+		for range cfg.count {
 			text := fmt.Sprintf("text%v", uuid.NewString())
 			err = cfg.testDB.Post(table, text)
 			if err != nil {
@@ -67,8 +69,18 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_DeleteWhereDeletedTrue(t *testing.T) {
+func Test_UpdateToDelete(t *testing.T) {
+	err := cfg.testDB.UpdateToDelete(cfg.tableNames[0], 1)
+	if err != nil {
+		t.Fatalf("[test_UpdateToDelete] %s", err)
+	}
+}
 
+func Test_DeleteWhereDeletedTrue(t *testing.T) {
+	err := cfg.testDB.DeleteWhereDeletedTrue(cfg.tableNames[0])
+	if err != nil {
+		t.Fatalf("[Test_DeleteWhereDeletedTrue]: %s", err)
+	}
 }
 
 func Test_IsValidTableID(t *testing.T) {
