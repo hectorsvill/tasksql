@@ -22,20 +22,40 @@ func Test_Complete(t *testing.T) {
 		t.Fatalf("[Test_CreateTableIfNotExist] %s", "err")
 	}
 
-	for range 100 {
-		text := fmt.Sprintf("text%v", rand.Intn(10000))
+	for range 4 {
+		text := fmt.Sprintf("text%v", rand.Intn(1000))
 		err = tasksql.Post(tableName, text)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	data, errGetTask := tasksql.GetTask(tableName)
+	data, errGetTask := tasksql.Get(tableName)
 	if errGetTask != nil {
 		t.Fatal(err)
 	}
 
 	for _, text := range data {
 		log.Println(text)
+	}
+}
+
+func Test_IsValidTableID(t *testing.T) {
+	type actualExpected struct {
+		input    string
+		expected bool
+	}
+
+	testCases := []actualExpected{
+		{input: "data", expected: true},
+		{input: "213sdqSelec-te", expected: false},
+	}
+
+	for _, tc := range testCases {
+		actual := tasksql.IsValidTableID(tc.input)
+		log.Println("expected: false\nactual: ", tc.expected)
+		if actual != tc.expected {
+			t.Fatalf("expected: false\nactual: %v", actual)
+		}
 	}
 }

@@ -2,6 +2,7 @@ package tasksql
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"strings"
 
@@ -37,9 +38,12 @@ func (tsql *TaskSQL) CloseTaskSQl() error {
 }
 
 func (tsql *TaskSQL) CreateTableIfNotExist(table string) error {
-	createTableIfNotExistWithTable := replaceTableName(createTableIfNotExist, table)
+	createTableIfNotExistWithTable, err := replaceTableName(createTableIfNotExist, table)
+	if err != nil {
+		return err
+	}
 	log.Println(createTableIfNotExistWithTable)
-	_, err := tsql.DB.Exec(createTableIfNotExistWithTable)
+	_, err = tsql.DB.Exec(createTableIfNotExistWithTable)
 	if err != nil {
 		return err
 	}
@@ -47,8 +51,11 @@ func (tsql *TaskSQL) CreateTableIfNotExist(table string) error {
 }
 
 func (tsql *TaskSQL) Post(table, text string) error {
-	insert := replaceTableName(insertTasksValueText, table)
-	_, err := tsql.DB.Exec(insert, text)
+	insert, err := replaceTableName(insertTasksValueText, table)
+	if err != nil {
+		return err
+	}
+	_, err = tsql.DB.Exec(insert, text)
 	if err != nil {
 		return err
 	}
@@ -56,8 +63,11 @@ func (tsql *TaskSQL) Post(table, text string) error {
 }
 
 func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
-	delete := replaceTableName(deleteWhereDeletedTrue, table)
-	_, err := tsql.DB.Exec(delete, true)
+	delete, err := replaceTableName(deleteWhereDeletedTrue, table)
+	if err != nil {
+		return err
+	}
+	_, err = tsql.DB.Exec(delete, true)
 	if err != nil {
 		return err
 	}
@@ -73,9 +83,12 @@ func (tsql *TaskSQL) UpdateToDelete(table string, id int) error {
 	return nil
 }
 
-func (tsql *TaskSQL) GetTask(table string) ([]string, error) {
+func (tsql *TaskSQL) Get(table string) ([]string, error) {
 	data := []string{}
-	selectAllTextWithTable := replaceTableName(selectAllText, table)
+	selectAllTextWithTable, err := replaceTableName(selectAllText, table)
+	if err != nil {
+		return data, err
+	}
 	rows, err := tsql.DB.Query(selectAllTextWithTable)
 	if err != nil {
 		return nil, err
@@ -92,7 +105,18 @@ func (tsql *TaskSQL) GetTask(table string) ([]string, error) {
 	return data, nil
 }
 
-func replaceTableName(query, tableName string) string {
-	return strings.Replace(query, "{table}", tableName, -1)
+func replaceTableName(query, tableName string) (string, error) {
+	if !IsValidTableID(tableName) {
+		return "", errors.New("invalid table name")
+	}
+	return strings.Replace(query, "{table}", tableName, -1), nil
+}
 
+func IsValidTableID(tableName string) bool {
+	for _, r := range tableName {
+		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '_') {
+			return false
+		}
+	}
+	return true
 }
