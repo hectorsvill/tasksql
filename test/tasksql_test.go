@@ -25,18 +25,18 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer testDB.CloseTaskSQl()
+	defer testDB.Close()
 
 	cfg = config{
 		testDB:     testDB,
 		tableNames: []string{"users", "data", "notes"},
-		count:      12,
+		count:      120,
 	}
 
 	code := m.Run()
 	// log.Println("[TEST START]tasksql")
 
-	// os.Remove(dbName)
+	os.Remove(dbName)
 	os.Exit(code)
 	// log.Println("[TEST FINISHED]tasksql")
 }

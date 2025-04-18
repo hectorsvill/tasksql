@@ -29,7 +29,7 @@ func NewDB(dbSourceName string) (*TaskSQL, error) {
 	return &TaskSQL{DB: db}, nil
 }
 
-func (tsql *TaskSQL) CloseTaskSQl() error {
+func (tsql *TaskSQL) Close() error {
 	if tsql.DB != nil {
 		return tsql.DB.Close()
 	}
@@ -37,12 +37,12 @@ func (tsql *TaskSQL) CloseTaskSQl() error {
 }
 
 func (tsql *TaskSQL) CreateTableIfNotExist(table string) error {
-	createTableIfNotExistWithTable, err := replaceTableName(createTableIfNotExist, table)
+	query, err := replaceTableName(createTableIfNotExist, table)
 	if err != nil {
 		return err
 	}
 	// log.Println(createTableIfNotExistWithTable)
-	_, err = tsql.DB.Exec(createTableIfNotExistWithTable)
+	_, err = tsql.DB.Exec(query)
 	if err != nil {
 		return err
 	}
@@ -92,11 +92,11 @@ func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
 
 func (tsql *TaskSQL) Get(table string) ([]string, error) {
 	data := []string{}
-	selectAllTextWithTable, err := replaceTableName(selectAllText, table)
+	query, err := replaceTableName(selectAllText, table)
 	if err != nil {
 		return data, err
 	}
-	rows, err := tsql.DB.Query(selectAllTextWithTable)
+	rows, err := tsql.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
