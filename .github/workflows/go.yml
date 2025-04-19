@@ -26,16 +26,6 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
 
-    - name: Cache Go modules
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-${{ matrix.go-version }}-
-
     - name: Install dependencies
       run: go mod tidy
 
@@ -44,10 +34,6 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-
-    - name: Upload test coverage (optional)
-      if: success()
-      run: go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html
       
     - name: Clean module cache
       run: rm -rf ~/go/pkg/mod/
