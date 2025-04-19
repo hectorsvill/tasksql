@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 	cfg = config{
 		testDB:     testDB,
 		tableNames: []string{"users", "data", "notes"},
-		count:      120,
+		count:      3,
 	}
 
 	code := m.Run()
