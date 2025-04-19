@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/google/generative-ai-go/genai"
+	"github.com/hectorsvill/tasksql"
 	"google.golang.org/api/option"
 )
 
@@ -77,24 +78,24 @@ func GetListModels(client *genai.Client, ctx context.Context) (models []string) 
 }
 
 func main() {
-	// taskSql, err := tasksql.NewDB("data.db")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer taskSql.CloseTaskSQl()
+	taskSql, err := tasksql.NewDB("data.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer taskSql.Close()
 
-	// taskSql.CreateTableIfNotExist("question")
-	// taskSql.CreateTableIfNotExist("answer")
+	taskSql.CreateTableIfNotExist("question")
+	taskSql.CreateTableIfNotExist("answer")
 
-	// // {"net/http", "html", "bufio", "embed"}
-	// question := "Write an article about the golang embed package."
-	// taskSql.Post("question", question)
-	// gem1 := Gemini{
-	// 	Model: Gemini_2_0_turbo,
-	// }
-	// log.Println(gem1.Model)
-	// answer := gem1.QueryText(question)
-	// taskSql.PostTask("answer", answer[0])
-	// log.Println(answer)
+	// {"net/http", "html", "bufio", "embed"}
+	question := "Write an article about the golang embed package."
+	taskSql.Post("question", question)
+	gem1 := Gemini{
+		Model: Gemini_2_0_turbo,
+	}
+	log.Println(gem1.Model)
+	answer := gem1.QueryText(question)
+	taskSql.Post("answer", answer[0])
+	log.Println(answer)
 
 }
