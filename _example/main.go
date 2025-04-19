@@ -78,25 +78,24 @@ func GetListModels(client *genai.Client, ctx context.Context) (models []string) 
 }
 
 func main() {
-
 	taskSql, err := tasksql.NewDB("data.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer taskSql.CloseTaskSQl()
+	defer taskSql.Close()
 
 	taskSql.CreateTableIfNotExist("question")
 	taskSql.CreateTableIfNotExist("answer")
 
-	question := "Write an article about the golang net/http package."
-
-	taskSql.PostTask("question", question)
+	// {"net/http", "html", "bufio", "embed"}
+	question := "Write an article about the golang embed package."
+	taskSql.Post("question", question)
 	gem1 := Gemini{
 		Model: Gemini_2_0_turbo,
 	}
 	log.Println(gem1.Model)
 	answer := gem1.QueryText(question)
-	taskSql.PostTask("answer", answer[0])
+	taskSql.Post("answer", answer[0])
 	log.Println(answer)
 
 }

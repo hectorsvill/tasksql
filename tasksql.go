@@ -2,81 +2,96 @@ package tasksql
 
 import (
 	"database/sql"
-	"log"
+	"errors"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
-	tableName = "tasks"
-	createTableIfNotExist = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
-	deleteWhereDeletedTrue = "DELETE FROM {table} WHERE completed = ?;"
+	tableName               = "tasks"
+	createTableIfNotExist   = "CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, deleted BOOLEAN DEFAULT FALSE);"
+	deleteWhereDeletedTrue  = "DELETE FROM {table} WHERE deleted = ?;"
 	updateDeletedTrueWereID = "UPDATE {table} SET deleted = ? WHERE id = ?;"
-	insertTasksValueText = "INSERT INTO {table} (text) VALUES (?);"
-	selectAllText = "SELECT text FROM {table} ORDER BY id;"
+	insertTasksValueText    = "INSERT INTO {table} (text) VALUES (?);"
+	selectAllText           = "SELECT text FROM {table} ORDER BY id;"
 )
 
-type TaskSQL struct{
+type TaskSQL struct {
 	DB *sql.DB
 }
 
 func NewDB(dbSourceName string) (*TaskSQL, error) {
 	db, err := sql.Open("sqlite3", dbSourceName)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 	return &TaskSQL{DB: db}, nil
 }
 
-func (tsql TaskSQL) CloseTaskSQl() error {
+func (tsql *TaskSQL) Close() error {
 	if tsql.DB != nil {
 		return tsql.DB.Close()
 	}
 	return nil
 }
 
-func (tsql TaskSQL) CreateTableIfNotExist(table string) error {
-	createTableIfNotExistWithTable := replaceTableName(createTableIfNotExist, table)
-	log.Println(createTableIfNotExistWithTable)
-	_, err := tsql.DB.Exec(createTableIfNotExistWithTable)
+func (tsql *TaskSQL) CreateTableIfNotExist(table string) error {
+	query, err := replaceTableName(createTableIfNotExist, table)
+	if err != nil {
+		return err
+	}
+	// log.Println(createTableIfNotExistWithTable)
+	_, err = tsql.DB.Exec(query)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tsql TaskSQL) PostTask(table, text string) error {
-	insert := replaceTableName(insertTasksValueText, table)
-	_, err := tsql.DB.Exec(insert, text)
+func (tsql *TaskSQL) Post(table, text string) error {
+	insert, err := replaceTableName(insertTasksValueText, table)
+	if err != nil {
+		return err
+	}
+	_, err = tsql.DB.Exec(insert, text)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tsql TaskSQL) DeleteWhereDeletedTrue(table string) error {
-	delete := replaceTableName(deleteWhereDeletedTrue, table)
-	_, err := tsql.DB.Exec(delete, true)
+func (tsql *TaskSQL) UpdateToDelete(table string, id int) error {
+	query, err := replaceTableName(updateDeletedTrueWereID, table)
+	if err != nil {
+		return err
+	}
+	_, err = tsql.DB.Exec(query, true, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tsql TaskSQL) UpdateToDelete(table string, id int) error {
-	
-	_, err := tsql.DB.Exec(updateDeletedTrueWereID, true, id)
+func (tsql *TaskSQL) DeleteWhereDeletedTrue(table string) error {
+	query, err := replaceTableName(deleteWhereDeletedTrue, table)
+	if err != nil {
+		return err
+	}
+	_, err = tsql.DB.Exec(query, true)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tsql TaskSQL) GetTask(table string) ([]string, error) {
+func (tsql *TaskSQL) Get(table string) ([]string, error) {
 	data := []string{}
-	selectAllTextWithTable := replaceTableName(selectAllText, table)
-	rows, err := tsql.DB.Query(selectAllTextWithTable)
+	query, err := replaceTableName(selectAllText, table)
+	if err != nil {
+		return data, err
+	}
+	rows, err := tsql.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +107,19 @@ func (tsql TaskSQL) GetTask(table string) ([]string, error) {
 	return data, nil
 }
 
-func replaceTableName(query ,tableName string) string {
-	return 	strings.Replace(query, "{table}", tableName, -1)
+func replaceTableName(query, tableName string) (string, error) {
+	if !IsValidTableID(tableName) {
+		return "", errors.New("[replaceTableName]: invalid table name")
+	}
+	return strings.Replace(query, "{table}", tableName, -1), nil
+}
 
+// TODO: move to tools folder
+func IsValidTableID(tableName string) bool {
+	for _, r := range tableName {
+		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '_') {
+			return false
+		}
+	}
+	return true
 }
