@@ -34,7 +34,10 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-      
+
+    - name: Modify permissions of Go module cache
+      run: chmod -R u+w ~/go/pkg/mod/
+
     - name: Clean module cache
       run: rm -rf ~/go/pkg/mod/
     
