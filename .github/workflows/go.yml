@@ -48,3 +48,12 @@ jobs:
     - name: Upload test coverage (optional)
       if: success()
       run: go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html
+      
+    - name: Clean module cache
+      run: rm -rf ~/go/pkg/mod/
+    
+    - name: Debug cache
+      run: ls -R ~/go/pkg/mod/
+
+    - name: Clean workspace
+      run: rm -rf ${{ github.workspace }}/*
