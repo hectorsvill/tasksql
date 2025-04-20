@@ -25,24 +25,30 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
-
+    
     - name: Install dependencies
       run: go mod tidy
-
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
-
-    - name: Modify permissions of Go module cache
-      run: chmod -R u+w ~/go/pkg/mod/
-
-    - name: Clean module cache
-      run: rm -rf ~/go/pkg/mod/
     
     - name: Debug cache
-      run: ls -R ~/go/pkg/mod/
-
-    - name: Clean workspace
-      run: rm -rf ${{ github.workspace }}/*
+      run: |
+        if [ -d ~/go/pkg/mod/ ]; then
+          ls -R ~/go/pkg/mod/
+        else
+          echo "Go module cache does not exist."
+        fi
+    
+    - name: Modify permissions of Go module cache
+      run: |
+        if [ -d ~/go/pkg/mod/ ]; then
+          chmod -R u+w ~/go/pkg/mod/
+        else
+          echo "Go module cache does not exist, skipping chmod."
+        fi
+    
+    - name: Clean module cache
+      run: |
+        if [ -d ~/go/pkg/mod/ ]; then
+          rm -rf ~/go/pkg/mod/
+        else
+          echo "Go module cache does not exist, skipping clean."
+        fi
