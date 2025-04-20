@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        go-version: ['stable'] # Test against multiple Go versions
+        go-version: ['stable'] # Test against the stable version of Go
 
     steps:
     - name: Check out code
@@ -25,30 +25,37 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
-    
+
     - name: Install dependencies
       run: go mod tidy
-    
-    - name: Debug cache
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Run tests with coverage (optional)
+      run: |
+        go test -coverprofile=coverage.out ./...
+        go tool cover -func=coverage.out
+
+    - name: Clean Go module cache
+      run: |
+        if [ -d ~/go/pkg/mod/ ]; then
+          chmod -R u+w ~/go/pkg/mod/
+          rm -rf ~/go/pkg/mod/
+        else
+          echo "Go module cache does not exist, skipping clean."
+        fi
+
+    - name: Debug Go module cache
       run: |
         if [ -d ~/go/pkg/mod/ ]; then
           ls -R ~/go/pkg/mod/
         else
           echo "Go module cache does not exist."
         fi
-    
-    - name: Modify permissions of Go module cache
-      run: |
-        if [ -d ~/go/pkg/mod/ ]; then
-          chmod -R u+w ~/go/pkg/mod/
-        else
-          echo "Go module cache does not exist, skipping chmod."
-        fi
-    
-    - name: Clean module cache
-      run: |
-        if [ -d ~/go/pkg/mod/ ]; then
-          rm -rf ~/go/pkg/mod/
-        else
-          echo "Go module cache does not exist, skipping clean."
-        fi
+
+    - name: Clean workspace
+      run: rm -rf ${{ github.workspace }}/*
